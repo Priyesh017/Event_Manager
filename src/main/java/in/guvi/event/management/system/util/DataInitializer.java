@@ -19,26 +19,31 @@ public class DataInitializer implements ApplicationRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.admin.email:admin@events.com}")
+    @Value("${app.admin.email:admin@eventhub.com}")
     private String adminEmail;
 
-    @Value("${app.admin.password:Admin@123}")
+    @Value("${app.admin.password:}")
     private String adminPassword;
 
     @Override
     public void run(ApplicationArguments args) {
+        if (adminPassword == null || adminPassword.isBlank()) {
+            log.info("No app.admin.password specified in environment or config. Skipping default admin seeding.");
+            return;
+        }
+
         if (!userRepository.existsByEmail(adminEmail)) {
             User admin = User.builder()
                 .name("System Admin")
-                .email(adminEmail)
+                .email(adminEmail.toLowerCase())
                 .password(passwordEncoder.encode(adminPassword))
                 .role(Role.ROLE_ADMIN)
                 .enabled(true)
                 .build();
             userRepository.save(admin);
-            log.info("Default admin account created: {}", adminEmail);
+            log.info("Default admin account created for: {}", adminEmail);
         } else {
-            log.info("Admin account already exists, skipping seed.");
+            log.info("Admin account already exists for {}, skipping seed.", adminEmail);
         }
     }
 }

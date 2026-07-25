@@ -113,7 +113,7 @@ Entities created with proper JPA mappings:
    ./mvnw spring-boot:run
    ```
 4. Access application at `http://localhost:8080`.
-   - Admin Login: `admin@eventhub.com` / `Admin@123`
+   - Admin Login: `admin@eventhub.com` / `(configured via APP_ADMIN_PASSWORD)`
 
 ---
 

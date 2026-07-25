@@ -66,8 +66,8 @@ resend:
 app:
   base-url: http://localhost:${SERVER_PORT:8080}
   admin:
-    email: admin@events.com
-    password: Admin@123
+    email: ${APP_ADMIN_EMAIL:admin@eventhub.com}
+    password: ${APP_ADMIN_PASSWORD:}
   reminder:
     days-before: 1     # Send reminder 1 day before event
 
