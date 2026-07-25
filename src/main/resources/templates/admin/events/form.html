@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${eventDto.id == null ? 'Create Event' : 'Edit Event'} + ' | Admin | EventHub'">Event Form | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <style>
+    .form-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:32px; max-width:800px; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    @media(max-width:640px) { .form-grid-2 { grid-template-columns:1fr; } }
+    .speakers-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:12px; }
+    .speaker-option { display:flex; align-items:center; gap:10px; padding:12px; background:var(--surface); border-radius:10px; cursor:pointer; border:1px solid var(--border); transition:var(--transition); }
+    .speaker-option:has(input:checked) { border-color:var(--primary); background:rgba(108,99,255,0.1); }
+    .speaker-option input { accent-color:var(--primary); width:16px; height:16px; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="nav-link" th:href="@{/admin/events}">← Back to Events</a>
+    </div>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+    <a class="sidebar-link" th:href="@{/admin/dashboard}"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-link active" th:href="@{/admin/events}"><span class="icon">📅</span> Events</a>
+    <a class="sidebar-link" th:href="@{/admin/speakers}"><span class="icon">🎤</span> Speakers</a>
+    <a class="sidebar-link" th:href="@{/admin/users}"><span class="icon">👥</span> Users</a>
+  </aside>
+  <main class="admin-main">
+    <h1 style="margin-bottom:24px;" th:text="${eventDto.id == null ? '+ Create New Event' : '✏ Edit Event'}">Event Form</h1>
+
+    <form th:action="${eventDto.id == null ? '/admin/events/create' : '/admin/events/' + eventDto.id + '/edit'}"
+          method="post" th:object="${eventDto}" class="form-card">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+      <div class="form-group">
+        <label class="form-label" for="title">Event Title *</label>
+        <input id="title" type="text" th:field="*{title}" class="form-control" placeholder="e.g. Java Spring Boot Masterclass">
+        <span class="field-error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Description *</label>
+        <textarea id="description" th:field="*{description}" class="form-control" rows="5" placeholder="Describe what this event is about..."></textarea>
+        <span class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></span>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="category">Category *</label>
+          <select id="category" th:field="*{category}" class="form-control">
+            <option value="">Select Category</option>
+            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat.name()}"></option>
+          </select>
+          <span class="field-error" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dates &amp; Times *</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <div style="flex:1;">
+              <label class="form-label" for="eventDate" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">Start</label>
+              <input id="eventDate" type="datetime-local" th:field="*{eventDate}" class="form-control">
+              <span class="field-error" th:if="${#fields.hasErrors('eventDate')}" th:errors="*{eventDate}"></span>
+            </div>
+            <div style="flex:1;">
+              <label class="form-label" for="endDate" style="font-size:0.8rem; color:var(--text-muted); margin-bottom:4px;">End</label>
+              <input id="endDate" type="datetime-local" th:field="*{endDate}" class="form-control">
+              <span class="field-error" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="venue">Venue *</label>
+          <input id="venue" type="text" th:field="*{venue}" class="form-control" placeholder="e.g. Tech Hub Auditorium">
+          <span class="field-error" th:if="${#fields.hasErrors('venue')}" th:errors="*{venue}"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="location">Location / City *</label>
+          <input id="location" type="text" th:field="*{location}" class="form-control" placeholder="e.g. Chennai, Tamil Nadu">
+          <span class="field-error" th:if="${#fields.hasErrors('location')}" th:errors="*{location}"></span>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="capacity">Capacity *</label>
+          <input id="capacity" type="number" th:field="*{capacity}" class="form-control" min="1" max="10000" placeholder="100">
+          <span class="field-error" th:if="${#fields.hasErrors('capacity')}" th:errors="*{capacity}"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="imageUrl">Image URL (optional)</label>
+          <input id="imageUrl" type="url" th:field="*{imageUrl}" class="form-control" placeholder="https://...">
+        </div>
+      </div>
+
+      <!-- Speakers -->
+      <div class="form-group" th:if="${!speakers.isEmpty()}">
+        <label class="form-label">Speakers (optional)</label>
+        <div class="speakers-grid">
+          <label class="speaker-option" th:each="speaker : ${speakers}">
+            <input type="checkbox" name="speakerIds"
+                   th:value="${speaker.id}"
+                   th:checked="${eventDto.speakerIds.contains(speaker.id)}">
+            <div>
+              <div style="font-weight:600; font-size:0.9rem;" th:text="${speaker.name}">Name</div>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div th:if="${speakers.isEmpty()}" class="alert alert-info" style="margin-bottom:20px;">
+        ℹ No speakers yet. <a th:href="@{/admin/speakers/create}">Add a speaker first</a>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:8px;">
+        <button type="submit" class="btn btn-primary">
+          <span th:text="${eventDto.id == null ? 'Create Event' : 'Save Changes'}">Submit</span>
+        </button>
+        <a class="btn btn-outline" th:href="@{/admin/events}">Cancel</a>
+      </div>
+    </form>
+  </main>
+</div>
+</body>
+</html>

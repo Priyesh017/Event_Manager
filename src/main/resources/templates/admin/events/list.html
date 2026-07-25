@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Events | Admin | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="nav-link" th:href="@{/events}">Public Site</a>
+      <a class="btn btn-outline btn-sm" href="#" onclick="document.getElementById('lf').submit();">Sign Out</a>
+      <form id="lf" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      </form>
+    </div>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+    <a class="sidebar-link" th:href="@{/admin/dashboard}"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-link active" th:href="@{/admin/events}"><span class="icon">📅</span> Events</a>
+    <a class="sidebar-link" th:href="@{/admin/speakers}"><span class="icon">🎤</span> Speakers</a>
+    <a class="sidebar-link" th:href="@{/admin/users}"><span class="icon">👥</span> Users</a>
+  </aside>
+  <main class="admin-main">
+    <div th:if="${successMessage}" class="alert alert-success">✅ <span th:text="${successMessage}"></span></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h1>Manage Events</h1>
+      <a class="btn btn-primary" th:href="@{/admin/events/create}">+ Create Event</a>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Registrations</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="event : ${events.content}">
+            <td th:text="${event.title}">Title</td>
+            <td>
+              <span class="badge" th:classappend="'badge-' + ${event.category.name().toLowerCase()}"
+                    th:text="${event.category.name()}">CAT</span>
+            </td>
+            <td th:text="${#temporals.format(event.eventDate, 'MMM d, yyyy')}">Date</td>
+            <td th:text="${event.location}">Location</td>
+            <td th:text="${event.registrationCount + ' / ' + event.capacity}">0/100</td>
+            <td>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <a class="btn btn-outline btn-sm" th:href="@{/admin/events/{id}/edit(id=${event.id})}">Edit</a>
+                <a class="btn btn-outline btn-sm" th:href="@{/admin/attendance/{id}(id=${event.id})}">Attendance</a>
+                <form th:action="@{/admin/events/{id}/delete(id=${event.id})}" method="post" style="display:inline;">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <button type="submit" class="btn btn-danger btn-sm"
+                          onclick="return confirm('Delete this event? This cannot be undone.')">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${events.isEmpty()}">
+            <td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">
+              No events yet. <a th:href="@{/admin/events/create}">Create one</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="pagination" th:if="${events.totalPages > 1}">
+      <a th:href="@{/admin/events(page=${currentPage - 1})}" class="page-btn"
+         th:classappend="${currentPage == 0} ? ' disabled' : ''">← Prev</a>
+      <a th:each="i : ${#numbers.sequence(0, events.totalPages - 1)}"
+         th:href="@{/admin/events(page=${i})}"
+         class="page-btn" th:classappend="${i == currentPage} ? ' active' : ''"
+         th:text="${i + 1}">1</a>
+      <a th:href="@{/admin/events(page=${currentPage + 1})}" class="page-btn"
+         th:classappend="${currentPage == events.totalPages - 1} ? ' disabled' : ''">Next →</a>
+    </div>
+  </main>
+</div>
+</body>
+</html>

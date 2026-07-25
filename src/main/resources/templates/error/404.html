@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body style="display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding:24px;">
+  <div class="fade-in">
+    <div style="font-size:5rem; margin-bottom:16px;">🔭</div>
+    <h1 style="font-size:5rem; font-weight:800; color:var(--primary-light); margin-bottom:0;">404</h1>
+    <h2 style="margin-bottom:12px;">Page Not Found</h2>
+    <p style="color:var(--text-muted); margin-bottom:28px;" th:text="${errorMessage != null ? errorMessage : 'The page you are looking for does not exist.'}">Not found.</p>
+    <a class="btn btn-primary" th:href="@{/}">Go Home</a>
+  </div>
+</body>
+</html>

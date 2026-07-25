@@ -1,0 +1,21 @@
+#!/bin/bash
+# pre-commit hook — Validate before committing
+
+echo "=== Pre-commit checks ==="
+
+# Check for .env in staged files
+if git diff --cached --name-only | grep -q "^\.env$"; then
+  echo "ERROR: .env file is staged for commit!"
+  echo "Remove it with: git reset HEAD .env"
+  exit 1
+fi
+
+# Check for hardcoded secrets (basic scan)
+if git diff --cached | grep -iE "(password|api_key|secret)\s*=\s*['\"][^$\{]" > /dev/null 2>&1; then
+  echo "WARNING: Possible hardcoded secret detected in staged changes."
+  echo "Use environment variables instead."
+  exit 1
+fi
+
+echo "Pre-commit checks passed!"
+exit 0

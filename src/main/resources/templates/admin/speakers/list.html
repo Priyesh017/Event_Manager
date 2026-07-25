@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Speakers | Admin | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="btn btn-outline btn-sm" href="#" onclick="document.getElementById('lf').submit();">Sign Out</a>
+      <form id="lf" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      </form>
+    </div>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+    <a class="sidebar-link" th:href="@{/admin/dashboard}"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-link" th:href="@{/admin/events}"><span class="icon">📅</span> Events</a>
+    <a class="sidebar-link active" th:href="@{/admin/speakers}"><span class="icon">🎤</span> Speakers</a>
+    <a class="sidebar-link" th:href="@{/admin/users}"><span class="icon">👥</span> Users</a>
+  </aside>
+  <main class="admin-main">
+    <div th:if="${successMessage}" class="alert alert-success">✅ <span th:text="${successMessage}"></span></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h1>Manage Speakers</h1>
+      <a class="btn btn-primary" th:href="@{/admin/speakers/create}">+ Add Speaker</a>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr><th>Name</th><th>Bio</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="speaker : ${speakers}">
+            <td style="font-weight:600;" th:text="${speaker.name}">Name</td>
+            <td style="color:var(--text-secondary); font-size:0.88rem;"
+                th:text="${speaker.bio != null ? (speaker.bio.length() > 80 ? speaker.bio.substring(0,80)+'…' : speaker.bio) : '-'}">Bio</td>
+            <td>
+              <div style="display:flex; gap:8px;">
+                <a class="btn btn-outline btn-sm" th:href="@{/admin/speakers/{id}/edit(id=${speaker.id})}">Edit</a>
+                <form th:action="@{/admin/speakers/{id}/delete(id=${speaker.id})}" method="post" style="display:inline;">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                  <button type="submit" class="btn btn-danger btn-sm"
+                          onclick="return confirm('Delete this speaker?')">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${speakers.isEmpty()}">
+            <td colspan="3" style="text-align:center; padding:32px; color:var(--text-muted);">
+              No speakers yet. <a th:href="@{/admin/speakers/create}">Add one</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

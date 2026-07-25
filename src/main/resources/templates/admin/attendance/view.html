@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance | Admin | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="nav-link" th:href="@{/admin/events}">← Back to Events</a>
+    </div>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+    <a class="sidebar-link" th:href="@{/admin/dashboard}"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-link active" th:href="@{/admin/events}"><span class="icon">📅</span> Events</a>
+    <a class="sidebar-link" th:href="@{/admin/speakers}"><span class="icon">🎤</span> Speakers</a>
+    <a class="sidebar-link" th:href="@{/admin/users}"><span class="icon">👥</span> Users</a>
+  </aside>
+  <main class="admin-main">
+    <div th:if="${successMessage}" class="alert alert-success">✅ <span th:text="${successMessage}"></span></div>
+
+    <h1 style="margin-bottom:4px;">Attendance — <span th:text="${event.title}">Event</span></h1>
+    <p style="color:var(--text-muted); margin-bottom:24px;">
+      📅 <span th:text="${#temporals.format(event.eventDate, 'MMMM d, yyyy · HH:mm')}">Date</span> &nbsp;|&nbsp;
+      📍 <span th:text="${event.venue}">Venue</span> &nbsp;|&nbsp;
+      ✅ <strong th:text="${attendedCount}">0</strong> attended of <strong th:text="${registrations.size()}">0</strong> registered
+    </p>
+
+    <form th:action="@{/admin/attendance/{id}/mark(id=${event.id})}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+      <div class="table-container" style="margin-bottom:20px;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:48px;">Attended</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Registered At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg : ${registrations}">
+              <td style="text-align:center;">
+                <input type="checkbox" name="attendedUserIds"
+                       th:value="${reg.user.id}"
+                       th:checked="${reg.attended}"
+                       style="width:18px; height:18px; accent-color:var(--primary); cursor:pointer;">
+              </td>
+              <td style="font-weight:600;" th:text="${reg.user.name}">Name</td>
+              <td style="color:var(--text-secondary);" th:text="${reg.user.email}">Email</td>
+              <td style="color:var(--text-muted); font-size:0.88rem;"
+                  th:text="${#temporals.format(reg.registeredAt, 'MMM d, yyyy')}">Date</td>
+            </tr>
+            <tr th:if="${registrations.isEmpty()}">
+              <td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);">No registrations for this event.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:if="${!registrations.isEmpty()}" style="display:flex; gap:12px;">
+        <button type="submit" class="btn btn-success">💾 Save Attendance</button>
+        <a class="btn btn-outline" th:href="@{/admin/events}">Cancel</a>
+      </div>
+    </form>
+  </main>
+</div>
+</body>
+</html>

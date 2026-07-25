@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${event.title + ' | EventHub'}">Event | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <style>
+    .event-detail-hero { padding:48px 0 32px; }
+    .event-detail-hero h1 { font-size:clamp(1.6rem,3vw,2.4rem); margin-bottom:16px; }
+    .event-info-grid { display:grid; grid-template-columns:1fr 340px; gap:32px; }
+    @media(max-width:768px) { .event-info-grid { grid-template-columns:1fr; } }
+    .info-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; }
+    .info-row { display:flex; align-items:flex-start; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+    .info-row:last-child { border-bottom:none; }
+    .info-icon { font-size:1.3rem; width:28px; flex-shrink:0; }
+    .info-label { font-size:0.78rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:2px; }
+    .info-value { color:var(--text); font-weight:500; }
+    .speaker-chip { display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--surface-2); border-radius:10px; margin-bottom:8px; }
+    .speaker-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); display:flex; align-items:center; justify-content:center; font-weight:700; color:#fff; font-size:0.9rem; flex-shrink:0; }
+    /* Status badges */
+    .status-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:999px; font-size:0.8rem; font-weight:700; letter-spacing:0.04em; }
+    .status-upcoming { background:rgba(99,102,241,0.15); color:#818CF8; border:1px solid rgba(99,102,241,0.3); }
+    .status-ongoing  { background:rgba(34,197,94,0.15);  color:#4ADE80; border:1px solid rgba(34,197,94,0.3);  }
+    .status-ended    { background:rgba(100,116,139,0.15); color:#94A3B8; border:1px solid rgba(100,116,139,0.3);}
+    /* Pulse dot for ONGOING */
+    .pulse-dot { width:8px; height:8px; border-radius:50%; background:#4ADE80; animation:pulse 1.4s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.5)} }
+    /* Attend button */
+    .btn-attend { background:linear-gradient(135deg,#22C55E,#16A34A); color:#fff; font-weight:700; border:none; }
+    .btn-attend:hover { filter:brightness(1.1); }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="nav-link" th:href="@{/events}">Browse Events</a>
+      <a class="nav-link" th:href="@{/my-registrations}" sec:authorize="isAuthenticated()">My Events</a>
+      <a class="nav-link" th:href="@{/admin/dashboard}" sec:authorize="hasRole('ADMIN')">⚙ Admin</a>
+      <span sec:authorize="isAuthenticated()">
+        <a class="btn btn-outline btn-sm" href="#" onclick="document.getElementById('lf').submit();">Sign Out</a>
+        <form id="lf" th:action="@{/logout}" method="post" style="display:none;">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        </form>
+      </span>
+      <span sec:authorize="!isAuthenticated()">
+        <a class="btn btn-outline btn-sm" th:href="@{/login}">Sign In</a>
+        <a class="btn btn-primary btn-sm" th:href="@{/register}">Sign Up</a>
+      </span>
+    </div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top:20px;">
+  <div th:if="${successMsg}" class="alert alert-success">✅ <span th:text="${successMsg}"></span></div>
+  <div th:if="${errorMsg}"   class="alert alert-error">❌ <span th:text="${errorMsg}"></span></div>
+  <div th:if="${successMessage}" class="alert alert-success">✅ <span th:text="${successMessage}"></span></div>
+  <div th:if="${errorMessage}"   class="alert alert-error">❌ <span th:text="${errorMessage}"></span></div>
+</div>
+
+<div class="container">
+  <!-- Breadcrumb -->
+  <div style="padding:16px 0; color:var(--text-muted); font-size:0.88rem;">
+    <a th:href="@{/}" style="color:var(--text-muted);">Home</a> /
+    <a th:href="@{/events}" style="color:var(--text-muted);">Events</a> /
+    <span th:text="${event.title}">Event</span>
+  </div>
+
+  <div class="event-detail-hero">
+    <!-- Category badge -->
+    <span class="badge" th:classappend="'badge-' + ${event.category.name().toLowerCase()}"
+          th:text="${event.category.name()}" style="margin-bottom:12px; display:inline-block;"></span>
+
+    <!-- Status badge -->
+    <span th:with="status=${event.status}"
+          class="status-badge"
+          th:classappend="${status.name() == 'UPCOMING'} ? 'status-upcoming' : (${status.name() == 'ONGOING'} ? 'status-ongoing' : 'status-ended')"
+          style="margin-left:8px;">
+      <span th:if="${status.name() == 'ONGOING'}" class="pulse-dot"></span>
+      <span th:text="${status.name() == 'UPCOMING'} ? '🕐 Upcoming' : (${status.name() == 'ONGOING'} ? '🟢 Ongoing' : '🔴 Ended')">Status</span>
+    </span>
+
+    <h1 th:text="${event.title}" style="margin-top:16px;">Event Title</h1>
+    <p style="color:var(--text-secondary);" th:text="${event.description}">Description</p>
+  </div>
+
+  <div class="event-info-grid">
+    <!-- Left: Speakers -->
+    <div>
+      <div th:if="${!event.speakers.isEmpty()}" style="margin-bottom:32px;">
+        <h3 style="margin-bottom:16px; font-size:1.1rem;">🎤 Speakers</h3>
+        <div th:each="speaker : ${event.speakers}">
+          <div class="speaker-chip">
+            <div class="speaker-avatar" th:text="${speaker.name != null and !#strings.isEmpty(speaker.name) ? speaker.name.substring(0,1) : 'S'}">A</div>
+            <div>
+              <div style="font-weight:600; font-size:0.95rem;" th:text="${speaker.name}">Name</div>
+              <div style="font-size:0.82rem; color:var(--text-secondary);" th:text="${speaker.bio != null ? speaker.bio.length() > 80 ? speaker.bio.substring(0,80) + '…' : speaker.bio : ''}">Bio</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Info Card + Registration -->
+    <div>
+      <div class="info-card">
+        <!-- Start Date -->
+        <div class="info-row">
+          <div class="info-icon">📅</div>
+          <div>
+            <div class="info-label">Starts</div>
+            <div class="info-value" th:text="${#temporals.format(event.eventDate, 'EEEE, MMMM d, yyyy')}">Date</div>
+            <div style="color:var(--text-secondary); font-size:0.88rem;" th:text="${#temporals.format(event.eventDate, 'HH:mm')}">Time</div>
+          </div>
+        </div>
+        <!-- End Date -->
+        <div class="info-row">
+          <div class="info-icon">🏁</div>
+          <div>
+            <div class="info-label">Ends</div>
+            <div class="info-value" th:text="${#temporals.format(event.endDate, 'EEEE, MMMM d, yyyy')}">Date</div>
+            <div style="color:var(--text-secondary); font-size:0.88rem;" th:text="${#temporals.format(event.endDate, 'HH:mm')}">Time</div>
+          </div>
+        </div>
+        <!-- Venue -->
+        <div class="info-row">
+          <div class="info-icon">📍</div>
+          <div>
+            <div class="info-label">Venue</div>
+            <div class="info-value" th:text="${event.venue}">Venue</div>
+            <div style="color:var(--text-secondary); font-size:0.88rem;" th:text="${event.location}">Location</div>
+          </div>
+        </div>
+        <!-- Capacity -->
+        <div class="info-row">
+          <div class="info-icon">👥</div>
+          <div>
+            <div class="info-label">Capacity</div>
+            <div class="info-value">
+              <span th:text="${event.availableSeats}">50</span> of
+              <span th:text="${event.capacity}">100</span> seats available
+            </div>
+          </div>
+        </div>
+        <!-- Category -->
+        <div class="info-row">
+          <div class="info-icon">🏷️</div>
+          <div>
+            <div class="info-label">Category</div>
+            <div class="info-value" th:text="${event.category.name()}">Category</div>
+          </div>
+        </div>
+
+        <!-- Registration & Attendance Actions -->
+        <div style="padding-top:20px; display:flex; flex-direction:column; gap:10px;">
+
+          <!-- Not logged in -->
+          <div sec:authorize="!isAuthenticated()">
+            <a class="btn btn-primary" th:href="@{/login}" style="width:100%; justify-content:center;">
+              Sign In to Register
+            </a>
+          </div>
+
+          <!-- Logged in: already registered -->
+          <div sec:authorize="isAuthenticated()" th:if="${isRegistered}">
+            <div class="alert alert-success" style="margin-bottom:12px;">✅ You are registered!</div>
+
+            <!-- Self-attendance button: only visible when event is ONGOING and user hasn't attended yet -->
+            <div th:if="${event.ongoing and !hasAttended}" style="margin-bottom:10px;">
+              <form th:action="@{/events/{id}/attend(id=${event.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <button type="submit" class="btn btn-attend" style="width:100%; justify-content:center;">
+                  ✔ Mark My Attendance
+                </button>
+              </form>
+            </div>
+            <!-- Already attended -->
+            <div th:if="${hasAttended}" style="margin-bottom:10px;">
+              <div class="alert alert-success" style="text-align:center;">✅ Attendance Confirmed!</div>
+            </div>
+
+            <!-- Cancel registration (only if event hasn't ended) -->
+            <form th:if="${event.status.name() != 'ENDED'}"
+                  th:action="@{/registrations/cancel/{id}(id=${event.id})}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="btn btn-danger" style="width:100%; justify-content:center;"
+                      onclick="return confirm('Cancel your registration?')">
+                Cancel Registration
+              </button>
+            </form>
+          </div>
+
+          <!-- Logged in: not registered, event is UPCOMING or ONGOING and has seats -->
+          <div sec:authorize="isAuthenticated()" th:if="${!isRegistered and event.available and event.status.name() != 'ENDED'}">
+            <form th:action="@{/registrations/register/{id}(id=${event.id})}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">
+                🎟 Register Now
+              </button>
+            </form>
+          </div>
+
+          <!-- Event full -->
+          <div sec:authorize="isAuthenticated()" th:if="${!isRegistered and !event.available and event.status.name() != 'ENDED'}">
+            <button class="btn btn-danger" disabled style="width:100%; justify-content:center; opacity:0.6;">
+              Event Full
+            </button>
+          </div>
+
+          <!-- Event ended -->
+          <div th:if="${event.status.name() == 'ENDED'}">
+            <div class="alert" style="text-align:center; background:rgba(100,116,139,0.15); color:#94A3B8; border:1px solid rgba(100,116,139,0.3); border-radius:8px; padding:12px;">
+              🔴 This event has ended
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer" style="margin-top:48px;">
+  <div class="footer-brand">🎯 EventHub</div>
+  <p class="footer-text">© 2026 EventHub.</p>
+</footer>
+</body>
+</html>

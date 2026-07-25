@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users | Admin | EventHub</title>
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
+  <style>
+    .role-form { display:flex; align-items:center; gap:8px; }
+    .role-select { background:var(--surface-2); border:1px solid var(--border); border-radius:6px; color:var(--text); padding:4px 8px; font-size:0.85rem; }
+    .btn-role { padding:4px 12px; font-size:0.82rem; border-radius:6px; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-brand" th:href="@{/}">🎯 EventHub</a>
+    <div class="nav-links">
+      <a class="btn btn-outline btn-sm" href="#" onclick="document.getElementById('lf').submit();">Sign Out</a>
+      <form id="lf" th:action="@{/logout}" method="post" style="display:none;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      </form>
+    </div>
+  </div>
+</nav>
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+    <a class="sidebar-link" th:href="@{/admin/dashboard}"><span class="icon">📊</span> Dashboard</a>
+    <a class="sidebar-link" th:href="@{/admin/events}"><span class="icon">📅</span> Events</a>
+    <a class="sidebar-link" th:href="@{/admin/speakers}"><span class="icon">🎤</span> Speakers</a>
+    <a class="sidebar-link active" th:href="@{/admin/users}"><span class="icon">👥</span> Users</a>
+  </aside>
+  <main class="admin-main">
+    <h1 style="margin-bottom:24px;">Registered Users</h1>
+
+    <!-- Flash messages -->
+    <div th:if="${successMsg}" class="alert alert-success" style="margin-bottom:16px;">✅ <span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}"   class="alert alert-error"   style="margin-bottom:16px;">❌ <span th:text="${errorMsg}"></span></div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="user : ${users}">
+            <td style="font-weight:600;" th:text="${user.name}">Name</td>
+            <td style="color:var(--text-secondary);" th:text="${user.email}">Email</td>
+            <td>
+              <span class="badge" th:classappend="${user.enabled} ? 'badge-success' : 'badge-warning'"
+                    th:text="${user.enabled} ? 'Active' : 'Disabled'">Active</span>
+            </td>
+            <td style="color:var(--text-muted); font-size:0.88rem;"
+                th:text="${#temporals.format(user.createdAt, 'MMM d, yyyy')}">Date</td>
+            <td>
+              <!-- Inline role update form -->
+              <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post" class="role-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <select name="role" class="role-select">
+                  <option th:each="r : ${roles}"
+                          th:value="${r.name()}"
+                          th:text="${r.name() == 'ROLE_ADMIN' ? 'Admin' : 'User'}"
+                          th:selected="${user.role == r}"></option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-role">Save</button>
+              </form>
+            </td>
+          </tr>
+          <tr th:if="${users.isEmpty()}">
+            <td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">No users yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>
