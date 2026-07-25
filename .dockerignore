@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.idea
+.agent
+documents
+target
+*.log
+HELP.md
+README.md
