@@ -202,6 +202,7 @@ event-management-system/
 │   └── context.md             # Developer context & mistake tracker
 ├── documents/                 # Complete technical documentation suite
 │   ├── build-guide.md         # Comprehensive build architecture guide
+│   ├── credentials.md         # Admin credentials & access configuration
 │   ├── feature-guide.md       # Feature manual & API permission matrix
 │   └── workflow.md            # Development & QA testing workflow
 ├── src/
