@@ -132,13 +132,21 @@ APP_ADMIN_EMAIL=admin@eventhub.com
 APP_ADMIN_PASSWORD=your_secure_admin_password_here
 ```
 
-### Step 3: Build & Run the Application
+### Step 3: Create an Admin Account
+Use the included CLI script to generate a secure administrator account without hardcoding passwords:
+```bash
+./scripts/add-admin.sh "admin@eventhub.com" "YourSecurePassword123!"
+```
+*(Windows users: Run `.\scripts\add-admin.ps1 -Email "admin@eventhub.com" -Password "YourSecurePassword123!"` in PowerShell)*
+
+### Step 4: Build & Run the Application
 Execute Flyway migrations and launch the dev server:
 ```bash
 ./mvnw spring-boot:run
 ```
 
 Access the web interface at `http://localhost:8080`.
+Log in with the admin credentials you created in Step 3.
 
 ---
 
@@ -150,8 +158,8 @@ Access the web interface at `http://localhost:8080`.
 | `DATABASE_URL` | Yes | - | PostgreSQL JDBC URL string |
 | `RESEND_API_KEY` | Yes | - | Transactional email API key from Resend |
 | `RESEND_DOMAIN` | No | `securevault.co.in` | Sender domain configured in Resend |
-| `APP_ADMIN_EMAIL` | No | `admin@eventhub.com` | Default admin email for seeding |
-| `APP_ADMIN_PASSWORD` | No | (Disabled if blank) | Default admin password for initial seed |
+| `APP_ADMIN_EMAIL` | No | `admin@eventhub.com` | (Legacy) Default admin email for env seeding |
+| `APP_ADMIN_PASSWORD` | No | (Disabled if blank) | (Legacy) Default admin password for env seeding |
 | `APP_BASE_URL` | No | `http://localhost:8080` | Root URL used in email link generators |
 
 ---
@@ -187,7 +195,7 @@ Run the automated test suite (includes repository, service logic, controller sli
 
 To prevent credential leaks and ensure enterprise security compliance:
 - 🚫 **No Hardcoded Passwords or API Keys**: All secrets are loaded dynamically from environment variables via `dotenv-java`.
-- 🔑 **Clean Seeding Logic**: `DataInitializer` conditionally seeds the admin account only when `APP_ADMIN_PASSWORD` is explicitly provided in the environment.
+- 🔑 **Secure Admin CLI**: Admin accounts are created using a dedicated script (`AdminCliRunner`) that hashes passwords via BCrypt and shuts down the JVM safely without booting the web server.
 - 🛡️ **Role Protection**: Admin user management restricts edits exclusively to toggling roles (`ROLE_USER` ↔ `ROLE_ADMIN`), ensuring user passwords and sensitive fields cannot be modified via admin forms.
 - 🔒 **CSRF & XSS Shield**: CSRF protection enabled across all POST/PUT/DELETE forms with HTML attribute escaping in Thymeleaf templates.
 
@@ -201,10 +209,14 @@ event-management-system/
 │   ├── agent.md               # Agent operational & efficiency guidelines
 │   └── context.md             # Developer context & mistake tracker
 ├── documents/                 # Complete technical documentation suite
+│   ├── admin-access-guide.md  # CLI instructions for admin creation
 │   ├── build-guide.md         # Comprehensive build architecture guide
 │   ├── credentials.md         # Admin credentials & access configuration
 │   ├── feature-guide.md       # Feature manual & API permission matrix
 │   └── workflow.md            # Development & QA testing workflow
+├── scripts/                   # System automation scripts
+│   ├── add-admin.sh           # Bash admin creation CLI script
+│   └── add-admin.ps1          # PowerShell admin creation CLI script
 ├── src/
 │   ├── main/
 │   │   ├── java/in/guvi/event/management/system/

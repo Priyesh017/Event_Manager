@@ -4,16 +4,33 @@
 
 ---
 
-## 🔑 Default Admin Account Credentials
+## 🔑 Generating Admin Account Credentials
 
-The application includes an automated data seeder (`DataInitializer`) that creates a default administrator account upon initial startup if specified in the configuration.
+EventHub does not come with hardcoded default admin credentials. To manage users and events securely, you must generate an admin account using the provided Command Line Interface (CLI) scripts.
 
-| Property | Default Value / Environment Variable | Description |
-|---|---|---|
-| **Role** | `ROLE_ADMIN` | Full access to Admin Panel (`/admin/**`) |
-| **Email** | `admin@eventhub.com` (`APP_ADMIN_EMAIL`) | Administrator login username |
-| **Password** | Configured via `APP_ADMIN_PASSWORD` (e.g. `Admin@123` in `.env`) | Administrator account password |
-| **Login Portal** | `http://localhost:8080/login` | Form login URL |
+For detailed instructions, refer to the **[Admin Access Guide](file:///e:/Guvi%20Projects/EventManagementSystem/event-management-system/documents/admin-access-guide.md)**.
+
+### Quick Start
+Use the `add-admin` script to securely create an administrator in the database.
+
+**Windows:**
+```powershell
+.\scripts\add-admin.ps1 -Email "admin@eventhub.com" -Password "YourSecurePassword123!"
+```
+
+**Linux/macOS:**
+```bash
+./scripts/add-admin.sh "admin@eventhub.com" "YourSecurePassword123!"
+```
+
+*These scripts safely initialize the Spring Boot context without starting the web server, hash your password with BCrypt, and shut down.*
+
+| Property | Description |
+|---|---|
+| **Role** | `ROLE_ADMIN` (Full access to Admin Panel `/admin/**`) |
+| **Email** | Provided during script execution |
+| **Password** | Provided during script execution |
+| **Login Portal** | `http://localhost:8080/login` |
 
 ---
 
@@ -29,12 +46,12 @@ An account with `ROLE_ADMIN` has access to the following administrative features
 
 ---
 
-## ⚙ How to Configure Admin Credentials in `.env`
+## ⚙ Fallback: Environment Variable Seeding
 
-To set or change the admin credentials for your local environment, add or modify the following lines in your `.env` file:
+While the CLI scripts are the recommended way to create admins, you can also set the following environment variables in `.env` to automatically seed an admin upon application startup:
 
 ```env
-# Admin Seeding Credentials
+# Admin Seeding Credentials (Legacy/CI)
 APP_ADMIN_EMAIL=admin@eventhub.com
 APP_ADMIN_PASSWORD=your_secure_admin_password_here
 ```

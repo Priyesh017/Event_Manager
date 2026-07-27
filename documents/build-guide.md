@@ -80,9 +80,10 @@ Entities created with proper JPA mappings:
 3. **Domain Protection on Capacity & Dates**: Added validation in `EventServiceImpl.updateEvent()` preventing admins from lowering event capacity below current active registrations and requiring `endDate` to be after `eventDate`.
 4. **Event Change Notification**: Implemented field-level change detection in `EventServiceImpl.updateEvent()` that automatically triggers asynchronous HTML email notifications to all registered users.
 5. **Role-Only Admin User Update**: Constrained `AdminUserController` role updates to role-only modifications (`ROLE_USER` ↔ `ROLE_ADMIN`), safeguarding user account credentials.
-6. **List Allocation Optimization**: Refactored `EventServiceImpl.resolveSpeakers()` to return immutable `List.of()` for empty ID lists, reducing heap allocation overhead.
-7. **Pagination Bounding**: Bound page size parameters to `[1, 50]` range across public and admin controllers to protect against memory exhaustion.
-8. **Graceful Exception Handling**: Added `IllegalArgumentException` and `IllegalStateException` handling in `GlobalExceptionHandler.java` for domain validation errors.
+6. **Admin Creation CLI Script**: Added `AdminCliRunner` and bash/powershell scripts to securely generate custom admins without hardcoding default passwords in the database or codebase.
+7. **List Allocation Optimization**: Refactored `EventServiceImpl.resolveSpeakers()` to return immutable `List.of()` for empty ID lists, reducing heap allocation overhead.
+8. **Pagination Bounding**: Bound page size parameters to `[1, 50]` range across public and admin controllers to protect against memory exhaustion.
+9. **Graceful Exception Handling**: Added `IllegalArgumentException` and `IllegalStateException` handling in `GlobalExceptionHandler.java` for domain validation errors.
 
 ---
 
@@ -108,12 +109,17 @@ Entities created with proper JPA mappings:
    RESEND_FROM_NAME=EventHub
    APP_BASE_URL=http://localhost:8080
    ```
-3. Run Flyway migrations and start the server:
+3. Create an initial Admin user using the CLI script:
+   ```bash
+   ./scripts/add-admin.sh "admin@eventhub.com" "SecurePassword123!"
+   # On Windows: .\scripts\add-admin.ps1 -Email "admin@eventhub.com" -Password "SecurePassword123!"
+   ```
+4. Run Flyway migrations and start the server:
    ```bash
    ./mvnw spring-boot:run
    ```
-4. Access application at `http://localhost:8080`.
-   - Admin Login: `admin@eventhub.com` / `(configured via APP_ADMIN_PASSWORD)`
+5. Access application at `http://localhost:8080`.
+   - Admin Login: Use the credentials you created in step 3.
 
 ---
 
